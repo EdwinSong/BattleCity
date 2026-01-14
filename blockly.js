@@ -6,105 +6,333 @@ window.addEventListener('load', function() {
 
 // 初始化Blockly编辑器
 function initBlockly() {
-  // 从JSON文件加载块定义
-  console.log('开始加载blocks.json文件...');
-  $.getJSON('blocks.json', function(json) {
-    console.log('成功加载blocks.json文件:', json);
-    
-    // 注册JSON中定义的所有块
-    if (json.blocks && json.blocks.blocks) {
-      console.log('JSON文件中包含', json.blocks.blocks.length, '个块定义');
-      json.blocks.blocks.forEach(function(blockDef) {
-        // 为每个块创建初始化函数
-        Blockly.Blocks[blockDef.type] = {
-          init: function() {
-            // 解析块定义并创建块
-            this.jsonInit(blockDef);
-          }
-        };
-      });
-      console.log('从JSON文件成功加载了', json.blocks.blocks.length, '个块定义');
-    } else {
-      console.error('JSON文件中没有找到blocks定义:', json);
+  // 定义块
+  // 移动类块
+  Blockly.Blocks['tank_forward'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField('前进')
+          .appendField(new Blockly.FieldNumber(100, 1, 1000, 10), 'DISTANCE')
+          .appendField('像素');
+      this.setPreviousStatement(true);
+      this.setNextStatement(true);
+      this.setColour(210);
+      this.setTooltip('向前移动指定距离');
+      this.setHelpUrl('');
     }
-    
-    // 创建包含游戏控制类别的toolbox配置
-    var toolboxConfig = {
-      "kind": "categoryToolbox",
-      "contents": [
-        {
-          "kind": "category",
-          "name": "运动控制",
-          "colour": 210,
-          "contents": [
-            {"kind": "block", "type": "tank_forward"},
-            {"kind": "block", "type": "tank_backward"},
-            {"kind": "block", "type": "tank_turn"},
-            {"kind": "block", "type": "tank_stop"}
-          ]
-        },
-        {
-          "kind": "category",
-          "name": "武器控制",
-          "colour": 0,
-          "contents": [
-            {"kind": "block", "type": "tank_fire"},
-            {"kind": "block", "type": "tank_fire_interval"}
-          ]
-        },
-        {
-          "kind": "category",
-          "name": "状态感知",
-          "colour": 65,
-          "contents": [
-            {"kind": "block", "type": "tank_has_enemy"},
-            {"kind": "block", "type": "tank_enemy_distance"},
-            {"kind": "block", "type": "tank_health"},
-            {"kind": "block", "type": "tank_x"},
-            {"kind": "block", "type": "tank_y"}
-          ]
-        },
-        {
-          "kind": "category",
-          "name": "流程控制",
-          "colour": 290,
-          "contents": [
-            {"kind": "block", "type": "tank_if_enemy"},
-            {"kind": "block", "type": "tank_if_low_health"},
-            {"kind": "block", "type": "tank_wait"}
-          ]
-        },
-        {
-          "kind": "category",
-          "name": "高级策略",
-          "colour": 160,
-          "contents": [
-            {"kind": "block", "type": "tank_approach_enemy"},
-            {"kind": "block", "type": "tank_patrol"},
-            {"kind": "block", "type": "tank_avoid"}
-          ]
-        },
-        {
-          "kind": "category",
-          "name": "游戏控制",
-          "colour": 120,
-          "contents": [
-            {"kind": "block", "type": "tank_start_programming_level"},
-            {"kind": "block", "type": "tank_wait_game_start"}
-          ]
-        }
-      ]
-    };
-    
-    // 创建Blockly工作区
-    console.log('开始创建Blockly工作区...');
-    var workspace = Blockly.inject('blockly-div', {
-      media: 'third-party/blockly/media/',
-      toolbox: toolboxConfig,
-      theme: Blockly.Themes.Classic,
-      scrollbars: true
-    });
-    console.log('Blockly工作区创建成功:', workspace);
+  };
+
+  Blockly.Blocks['tank_backward'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField('后退')
+          .appendField(new Blockly.FieldNumber(100, 1, 1000, 10), 'DISTANCE')
+          .appendField('像素');
+      this.setPreviousStatement(true);
+      this.setNextStatement(true);
+      this.setColour(210);
+      this.setTooltip('向后移动指定距离');
+      this.setHelpUrl('');
+    }
+  };
+
+  Blockly.Blocks['tank_turn'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField('转向')
+          .appendField(new Blockly.FieldDropdown([['左', 'LEFT'], ['右', 'RIGHT']]), 'DIRECTION')
+          .appendField(new Blockly.FieldNumber(90, 1, 360, 1), 'DEGREES')
+          .appendField('度');
+      this.setPreviousStatement(true);
+      this.setNextStatement(true);
+      this.setColour(210);
+      this.setTooltip('向指定方向旋转指定角度');
+      this.setHelpUrl('');
+    }
+  };
+
+  Blockly.Blocks['tank_stop'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField('停止');
+      this.setPreviousStatement(true);
+      this.setNextStatement(true);
+      this.setColour(210);
+      this.setTooltip('停止移动');
+      this.setHelpUrl('');
+    }
+  };
+
+  // 武器控制类块
+  Blockly.Blocks['tank_fire'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField('发射子弹');
+      this.setPreviousStatement(true);
+      this.setNextStatement(true);
+      this.setColour(0);
+      this.setTooltip('发射一颗子弹');
+      this.setHelpUrl('');
+    }
+  };
+
+  Blockly.Blocks['tank_fire_interval'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField('以')
+          .appendField(new Blockly.FieldNumber(500, 100, 2000, 100), 'INTERVAL')
+          .appendField('毫秒间隔连续发射子弹');
+      this.setPreviousStatement(true);
+      this.setNextStatement(true);
+      this.setColour(0);
+      this.setTooltip('以指定时间间隔连续发射子弹');
+      this.setHelpUrl('');
+    }
+  };
+
+  // 状态感知类块
+  Blockly.Blocks['tank_has_enemy'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField('检测到敌人');
+      this.setOutput(true, 'Boolean');
+      this.setColour(65);
+      this.setTooltip('检测前方是否有敌人');
+      this.setHelpUrl('');
+    }
+  };
+
+  Blockly.Blocks['tank_enemy_distance'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField('与最近敌人的距离');
+      this.setOutput(true, 'Number');
+      this.setColour(65);
+      this.setTooltip('获取与最近敌人的距离（像素）');
+      this.setHelpUrl('');
+    }
+  };
+
+  Blockly.Blocks['tank_health'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField('生命值');
+      this.setOutput(true, 'Number');
+      this.setColour(65);
+      this.setTooltip('获取当前生命值');
+      this.setHelpUrl('');
+    }
+  };
+
+  Blockly.Blocks['tank_x'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField('X坐标');
+      this.setOutput(true, 'Number');
+      this.setColour(65);
+      this.setTooltip('获取坦克当前的X坐标');
+      this.setHelpUrl('');
+    }
+  };
+
+  Blockly.Blocks['tank_y'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField('Y坐标');
+      this.setOutput(true, 'Number');
+      this.setColour(65);
+      this.setTooltip('获取坦克当前的Y坐标');
+      this.setHelpUrl('');
+    }
+  };
+
+  // 流程控制类块
+  Blockly.Blocks['tank_if_enemy'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField('如果前方有敌人');
+      this.appendStatementInput('DO')
+          .setCheck(null);
+      this.setPreviousStatement(true);
+      this.setNextStatement(true);
+      this.setColour(290);
+      this.setTooltip('如果前方检测到敌人，则执行内部语句');
+      this.setHelpUrl('');
+    }
+  };
+
+  Blockly.Blocks['tank_if_low_health'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField('如果生命值低于')
+          .appendField(new Blockly.FieldNumber(20, 0, 100), 'THRESHOLD');
+      this.appendStatementInput('DO')
+          .setCheck(null);
+      this.setPreviousStatement(true);
+      this.setNextStatement(true);
+      this.setColour(290);
+      this.setTooltip('如果生命值低于指定阈值，则执行内部语句');
+      this.setHelpUrl('');
+    }
+  };
+
+  Blockly.Blocks['tank_wait'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField('等待')
+          .appendField(new Blockly.FieldNumber(1000, 0, 10000, 10), 'TIME')
+          .appendField('毫秒');
+      this.setPreviousStatement(true);
+      this.setNextStatement(true);
+      this.setColour(290);
+      this.setTooltip('暂停指定时间后继续执行');
+      this.setHelpUrl('');
+    }
+  };
+
+  // 高级策略类块
+  Blockly.Blocks['tank_approach_enemy'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField('向最近敌人移动');
+      this.setPreviousStatement(true);
+      this.setNextStatement(true);
+      this.setColour(160);
+      this.setTooltip('自动计算路径并向最近敌人移动');
+      this.setHelpUrl('');
+    }
+  };
+
+  Blockly.Blocks['tank_patrol'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField('从')
+          .appendField(new Blockly.FieldTextInput('A点'), 'POINT_A')
+          .appendField('到')
+          .appendField(new Blockly.FieldTextInput('B点'), 'POINT_B')
+          .appendField('巡逻');
+      this.setPreviousStatement(true);
+      this.setNextStatement(true);
+      this.setColour(160);
+      this.setTooltip('在两点之间自动巡逻');
+      this.setHelpUrl('');
+    }
+  };
+
+  Blockly.Blocks['tank_avoid'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField('避开障碍物');
+      this.setPreviousStatement(true);
+      this.setNextStatement(true);
+      this.setColour(160);
+      this.setTooltip('自动检测并避开前方障碍物');
+      this.setHelpUrl('');
+    }
+  };
+
+  // 游戏控制类块
+  Blockly.Blocks['tank_start_programming_level'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField('开始游戏');
+      this.setPreviousStatement(true);
+      this.setNextStatement(true);
+      this.setColour(120);
+      this.setTooltip('开始编程关卡');
+      this.setHelpUrl('');
+    }
+  };
+
+  Blockly.Blocks['tank_wait_game_start'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField('等待游戏开始');
+      this.appendStatementInput('DO')
+          .setCheck(null);
+      this.setPreviousStatement(true);
+      this.setNextStatement(true);
+      this.setColour(290);
+      this.setTooltip('等待游戏开始后执行内部语句');
+      this.setHelpUrl('');
+    }
+  };
+
+  // 定义toolbox配置
+  var toolboxConfig = {
+    "kind": "categoryToolbox",
+    "contents": [
+      {
+        "kind": "category",
+        "name": "运动控制",
+        "colour": 210,
+        "contents": [
+          {"kind": "block", "type": "tank_forward"},
+          {"kind": "block", "type": "tank_backward"},
+          {"kind": "block", "type": "tank_turn"},
+          {"kind": "block", "type": "tank_stop"}
+        ]
+      },
+      {
+        "kind": "category",
+        "name": "武器控制",
+        "colour": 0,
+        "contents": [
+          {"kind": "block", "type": "tank_fire"},
+          {"kind": "block", "type": "tank_fire_interval"}
+        ]
+      },
+      {
+        "kind": "category",
+        "name": "状态感知",
+        "colour": 65,
+        "contents": [
+          {"kind": "block", "type": "tank_has_enemy"},
+          {"kind": "block", "type": "tank_enemy_distance"},
+          {"kind": "block", "type": "tank_health"},
+          {"kind": "block", "type": "tank_x"},
+          {"kind": "block", "type": "tank_y"}
+        ]
+      },
+      {
+        "kind": "category",
+        "name": "流程控制",
+        "colour": 290,
+        "contents": [
+          {"kind": "block", "type": "tank_if_enemy"},
+          {"kind": "block", "type": "tank_if_low_health"},
+          {"kind": "block", "type": "tank_wait"}
+        ]
+      },
+      {
+        "kind": "category",
+        "name": "高级策略",
+        "colour": 160,
+        "contents": [
+          {"kind": "block", "type": "tank_approach_enemy"},
+          {"kind": "block", "type": "tank_patrol"},
+          {"kind": "block", "type": "tank_avoid"}
+        ]
+      },
+      {
+        "kind": "category",
+        "name": "游戏控制",
+        "colour": 120,
+        "contents": [
+          {"kind": "block", "type": "tank_start_programming_level"},
+          {"kind": "block", "type": "tank_wait_game_start"}
+        ]
+      }
+    ]
+  };
+
+  // 创建Blockly工作区
+  var workspace = Blockly.inject('blockly-div', {
+    media: 'third-party/blockly/media/',
+    toolbox: toolboxConfig,
+    theme: Blockly.Themes.Classic,
+    scrollbars: true
+  });
     
     // 监听工作区变化，实时生成代码
     workspace.addChangeListener(function() {
@@ -135,9 +363,6 @@ function initBlockly() {
     // 将按钮添加到编辑器容器
     document.getElementById('editor-container').insertBefore(runButton, document.getElementById('code-div'));
     document.getElementById('editor-container').insertBefore(clearButton, document.getElementById('code-div'));
-  }).fail(function() {
-    console.error('加载blocks.json文件失败');
-  });
   
   // 创建坦克控制的自定义块
   Blockly.Blocks['tank_start'] = {
