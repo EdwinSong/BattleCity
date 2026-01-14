@@ -56,6 +56,8 @@ Tank.Event.DESTROYED = 'Tank.Event.DESTROYED';
 Tank.Event.PLAYER_DESTROYED = 'Tank.Event.PLAYER_DESTROYED';
 Tank.Event.ENEMY_DESTROYED = 'Tank.Event.ENEMY_DESTROYED';
 Tank.Event.FLASHING_TANK_DESTROYED = 'Tank.Event.FLASHING_TANK_DESTROYED';
+Tank.Event.ENEMY_APPROACHING = 'Tank.Event.ENEMY_APPROACHING';
+Tank.Event.ENEMY_AT_DISTANCE = 'Tank.Event.ENEMY_AT_DISTANCE';
 
 Tank.prototype.getState = function () {
   return this._state;
@@ -135,6 +137,19 @@ Tank.prototype.shoot = function () {
   if (this._bullets >= this._bulletsLimit) {
     return;
   }
+  
+  // 只在玩家坦克射击时输出详细日志
+  if (this.isPlayer()) {
+    console.log('Player Tank shooting:', {
+      type: this._type,
+      position: {x: this._x, y: this._y},
+      direction: this._direction,
+      bulletType: this._bulletType,
+      bulletSpeed: this._bulletSpeed,
+      bulletsFired: this._bullets + 1
+    });
+  }
+  
   this._bullets++;
   this._eventManager.fireEvent({'name': Tank.Event.SHOOT, 'tank': this});
 };

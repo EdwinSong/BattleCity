@@ -1,0 +1,336 @@
+{
+  "blocks": {
+    "language": "zh-hans",
+    "blocks": [
+      {
+        "type": "tank_forward",
+        "message0": "向前移动 %1 像素",
+        "args0": [
+          {
+            "type": "field_number",
+            "name": "DISTANCE",
+            "value": 100,
+            "min": 0,
+            "precision": 1
+          }
+        ],
+        "previousStatement": true,
+        "nextStatement": true,
+        "colour": 210,
+        "tooltip": "控制坦克向前移动指定距离",
+        "helpUrl": ""
+      },
+      {
+        "type": "tank_backward",
+        "message0": "向后移动 %1 像素",
+        "args0": [
+          {
+            "type": "field_number",
+            "name": "DISTANCE",
+            "value": 100,
+            "min": 0,
+            "precision": 1
+          }
+        ],
+        "previousStatement": true,
+        "nextStatement": true,
+        "colour": 210,
+        "tooltip": "控制坦克向后移动指定距离",
+        "helpUrl": ""
+      },
+      {
+        "type": "tank_turn",
+        "message0": "向 %1 旋转 %2 度",
+        "args0": [
+          {
+            "type": "field_dropdown",
+            "name": "DIRECTION",
+            "options": [
+              ["左", "LEFT"],
+              ["右", "RIGHT"]
+            ]
+          },
+          {
+            "type": "field_number",
+            "name": "ANGLE",
+            "value": 15,
+            "min": 0,
+            "max": 360,
+            "precision": 1
+          }
+        ],
+        "previousStatement": true,
+        "nextStatement": true,
+        "colour": 210,
+        "tooltip": "控制坦克向左或向右旋转指定角度",
+        "helpUrl": ""
+      },
+      {
+        "type": "tank_stop",
+        "message0": "停止",
+        "previousStatement": true,
+        "nextStatement": true,
+        "colour": 210,
+        "tooltip": "立即停止坦克所有运动",
+        "helpUrl": ""
+      },
+      {
+        "type": "tank_fire",
+        "message0": "开火",
+        "previousStatement": true,
+        "nextStatement": true,
+        "colour": 0,
+        "tooltip": "向当前方向发射炮弹",
+        "helpUrl": ""
+      },
+      {
+        "type": "tank_fire_interval",
+        "message0": "设置开火间隔为 %1 毫秒",
+        "args0": [
+          {
+            "type": "field_number",
+            "name": "INTERVAL",
+            "value": 500,
+            "min": 100,
+            "precision": 10
+          }
+        ],
+        "previousStatement": true,
+        "nextStatement": true,
+        "colour": 0,
+        "tooltip": "设置坦克开火的最小时间间隔",
+        "helpUrl": ""
+      },
+      {
+        "type": "tank_has_enemy",
+        "message0": "前方有敌人吗？",
+        "output": "Boolean",
+        "colour": 65,
+        "tooltip": "检查坦克前方是否有敌人，返回真或假",
+        "helpUrl": ""
+      },
+      {
+        "type": "tank_enemy_distance",
+        "message0": "与最近敌人的距离",
+        "output": "Number",
+        "colour": 65,
+        "tooltip": "获取与最近敌人的距离（像素）",
+        "helpUrl": ""
+      },
+      {
+        "type": "tank_health",
+        "message0": "生命值",
+        "output": "Number",
+        "colour": 65,
+        "tooltip": "获取当前生命值",
+        "helpUrl": ""
+      },
+      {
+        "type": "tank_x",
+        "message0": "X坐标",
+        "output": "Number",
+        "colour": 65,
+        "tooltip": "获取坦克当前的X坐标",
+        "helpUrl": ""
+      },
+      {
+        "type": "tank_y",
+        "message0": "Y坐标",
+        "output": "Number",
+        "colour": 65,
+        "tooltip": "获取坦克当前的Y坐标",
+        "helpUrl": ""
+      },
+      {
+        "type": "tank_if_enemy",
+        "message0": "如果前方有敌人 %1 那么 %2",
+        "args0": [
+          {
+            "type": "input_dummy"
+          },
+          {
+            "type": "input_statement",
+            "name": "DO"
+          }
+        ],
+        "previousStatement": true,
+        "nextStatement": true,
+        "colour": 290,
+        "tooltip": "如果前方检测到敌人，则执行内部语句",
+        "helpUrl": ""
+      },
+      {
+        "type": "tank_if_low_health",
+        "message0": "如果生命值低于 %1 %2 那么 %3",
+        "args0": [
+          {
+            "type": "field_number",
+            "name": "THRESHOLD",
+            "value": 20,
+            "min": 0,
+            "max": 100
+          },
+          {
+            "type": "input_dummy"
+          },
+          {
+            "type": "input_statement",
+            "name": "DO"
+          }
+        ],
+        "previousStatement": true,
+        "nextStatement": true,
+        "colour": 290,
+        "tooltip": "如果生命值低于指定阈值，则执行内部语句",
+        "helpUrl": ""
+      },
+      {
+        "type": "tank_wait",
+        "message0": "等待 %1 毫秒",
+        "args0": [
+          {
+            "type": "field_number",
+            "name": "TIME",
+            "value": 1000,
+            "min": 0,
+            "precision": 10
+          }
+        ],
+        "previousStatement": true,
+        "nextStatement": true,
+        "colour": 290,
+        "tooltip": "暂停指定时间后继续执行",
+        "helpUrl": ""
+      },
+      {
+        "type": "tank_approach_enemy",
+        "message0": "向最近敌人移动",
+        "previousStatement": true,
+        "nextStatement": true,
+        "colour": 160,
+        "tooltip": "自动计算路径并向最近敌人移动",
+        "helpUrl": ""
+      },
+      {
+        "type": "tank_patrol",
+        "message0": "从 %1 到 %2 巡逻",
+        "args0": [
+          {
+            "type": "field_input",
+            "name": "POINT_A",
+            "text": "A点"
+          },
+          {
+            "type": "field_input",
+            "name": "POINT_B",
+            "text": "B点"
+          }
+        ],
+        "previousStatement": true,
+        "nextStatement": true,
+        "colour": 160,
+        "tooltip": "在两点之间自动巡逻",
+        "helpUrl": ""
+      },
+      {
+        "type": "tank_avoid",
+        "message0": "躲避障碍物",
+        "previousStatement": true,
+        "nextStatement": true,
+        "colour": 160,
+        "tooltip": "自动检测并躲避前方障碍物",
+        "helpUrl": ""
+      },
+      {
+        "type": "tank_start_programming_level",
+        "message0": "开始游戏",
+        "previousStatement": true,
+        "nextStatement": true,
+        "colour": 120,
+        "tooltip": "开始编程关卡",
+        "helpUrl": ""
+      },
+      {
+        "type": "tank_wait_game_start",
+        "message0": "等待游戏开始 %1",
+        "args0": [
+          {
+            "type": "input_statement",
+            "name": "DO"
+          }
+        ],
+        "previousStatement": true,
+        "nextStatement": true,
+        "colour": 290,
+        "tooltip": "等待游戏开始后执行内部语句",
+        "helpUrl": ""
+      }
+    ]
+  },
+  "toolbox": {
+    "kind": "categoryToolbox",
+    "contents": [
+      {
+        "kind": "category",
+        "name": "运动控制",
+        "colour": 210,
+        "contents": [
+          {"kind": "block", "type": "tank_forward"},
+          {"kind": "block", "type": "tank_backward"},
+          {"kind": "block", "type": "tank_turn"},
+          {"kind": "block", "type": "tank_stop"}
+        ]
+      },
+      {
+        "kind": "category",
+        "name": "武器控制",
+        "colour": 0,
+        "contents": [
+          {"kind": "block", "type": "tank_fire"},
+          {"kind": "block", "type": "tank_fire_interval"}
+        ]
+      },
+      {
+        "kind": "category",
+        "name": "状态感知",
+        "colour": 65,
+        "contents": [
+          {"kind": "block", "type": "tank_has_enemy"},
+          {"kind": "block", "type": "tank_enemy_distance"},
+          {"kind": "block", "type": "tank_health"},
+          {"kind": "block", "type": "tank_x"},
+          {"kind": "block", "type": "tank_y"}
+        ]
+      },
+      {
+        "kind": "category",
+        "name": "流程控制",
+        "colour": 290,
+        "contents": [
+          {"kind": "block", "type": "tank_if_enemy"},
+          {"kind": "block", "type": "tank_if_low_health"},
+          {"kind": "block", "type": "tank_wait"}
+        ]
+      },
+      {
+        "kind": "category",
+        "name": "高级策略",
+        "colour": 160,
+        "contents": [
+          {"kind": "block", "type": "tank_approach_enemy"},
+          {"kind": "block", "type": "tank_patrol"},
+          {"kind": "block", "type": "tank_avoid"}
+        ]
+      },
+      {
+        "kind": "category",
+        "name": "游戏控制",
+        "colour": 120,
+        "contents": [
+          {"kind": "block", "type": "tank_start_programming_level"},
+          {"kind": "block", "type": "tank_wait_game_start"}
+        ]
+      }
+    ]
+  }
+}

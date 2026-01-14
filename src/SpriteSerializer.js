@@ -20,7 +20,12 @@ SpriteSerializer.prototype.unserializeSprites = function (text) {
   var result = [];
   var strings = text.split(SpriteSerializer.SEPARATOR);
   strings.forEach(function (str) {
+    str = str.trim(); // Remove whitespace
+    if (!str) return; // Skip empty strings
+    
     var matches = str.match(/(\w+)\((\d+),(\d+)\)/);
+    if (!matches) return; // Skip invalid format
+    
     var className = matches[1];
     var x = parseInt(matches[2]);
     var y = parseInt(matches[3]);

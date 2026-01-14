@@ -107,3 +107,19 @@ Globals.stages.push({
     Tank.Type.ARMOR,
   ]
 });;
+
+// Stage 5 - Only one enemy tank
+Globals.stages.push({
+  map: "Base(224,400);BrickWall(208,416);BrickWall(208,400);BrickWall(208,384);BrickWall(224,384);BrickWall(240,384);BrickWall(256,384);BrickWall(256,400);BrickWall(256,416);",
+  tanks: [
+    Tank.Type.BASIC
+  ]
+});
+
+// Stage 6 -少儿编程关卡：固定位置的AI坦克
+Globals.stages.push({
+  map: "Base(224,400);BrickWall(208,416);BrickWall(208,400);BrickWall(208,384);BrickWall(224,384);BrickWall(240,384);BrickWall(256,384);BrickWall(256,400);BrickWall(256,416);",
+  tanks: [
+    {type: Tank.Type.BASIC, fixed: true, position: {x: 160, y: 128}}
+  ]
+});

@@ -95,6 +95,15 @@ AITankController.prototype.update = function () {
   if (this._freezed || this._pauseListener.isPaused()) {
     return;
   }
+  
+  // 检查坦克是否标记为固定位置
+  if (this._tank._fixedPosition) {
+    // 固定位置的坦克只射击，不移动
+    this.updateShoot();
+    return;
+  }
+  
+  // 普通坦克的正常行为
   this.updateShoot();
   this.updateDirection();
 };

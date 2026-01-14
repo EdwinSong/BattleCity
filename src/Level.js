@@ -12,7 +12,7 @@ function Level(sceneManager, stageNumber, player) {
   this._visible = false;
   this._stage = stageNumber;
   
-  new PlayerTankControllerFactory(this._eventManager);
+  this._playerTankControllerFactory = new PlayerTankControllerFactory(this._eventManager);
   
   this._playerTankFactory = new PlayerTankFactory(this._eventManager);
   this._playerTankFactory.setAppearPosition(new Point(this._x + 4 * Globals.UNIT_SIZE, this._y + 12 * Globals.UNIT_SIZE));
@@ -27,6 +27,8 @@ function Level(sceneManager, stageNumber, player) {
   
   this._aiControllersContainer = new AITankControllerContainer(this._eventManager);
   this._aiTankControllerFactory = new AITankControllerFactory(this._eventManager, this._spriteContainer);
+  
+  this._distanceMonitor = new DistanceMonitor(this._eventManager, this._spriteContainer);
 
   this._enemyFactory = new EnemyFactory(this._eventManager);
   this._enemyFactory.setPositions([
@@ -90,6 +92,7 @@ Level.prototype.update = function () {
   this._freezeTimer.update();
   this._shovelHandler.update();
   this._pause.update();
+  this._distanceMonitor.update();
   this._gameOverScript.update();
   this._levelTransitionScript.update();
 };
@@ -106,8 +109,18 @@ Level.prototype.draw = function (ctx) {
   this._gameOverMessage.draw(ctx);
 };
 
+// 游戏事件定义
+Level.Event = {};
+Level.Event.GAME_STARTED = 'Level.Event.GAME_STARTED';
+
 Level.prototype.show = function () {
   this._visible = true;
+  // 游戏开始事件
+  this._eventManager.fireEvent({'name': Level.Event.GAME_STARTED, 'level': this});
+  // 同时在全局事件管理器上触发，以便外部代码（如少儿编程接口）可以监听
+  if (window.Game && window.Game.eventManager) {
+    window.Game.eventManager.fireEvent({'name': Level.Event.GAME_STARTED, 'level': this});
+  }
 };
 
 Level.prototype.notify = function (event) {
@@ -175,4 +188,15 @@ Level.prototype._drawFlag = function (ctx) {
   
   ctx.fillStyle = "black";
   ctx.fillText(("" + this._stage).lpad(" ", 2), 466, 398);
+};
+
+Level.prototype.getPlayerTankControllerFactory = function() {
+  return this._playerTankControllerFactory;
+};
+
+Level.prototype.getPlayerTankController = function() {
+  if (this._playerTankControllerFactory) {
+    return this._playerTankControllerFactory.getLatestController();
+  }
+  return null;
 };

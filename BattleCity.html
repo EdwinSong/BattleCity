@@ -3,6 +3,8 @@
 <html>
 <head>
   <title>Battle City</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   
   <link rel="stylesheet" type="text/css" href="css/BattleCity.css" />
   
@@ -95,9 +97,23 @@
   <script type="text/javascript" src="src/Trees.js"></script>
   <script type="text/javascript" src="src/Water.js"></script>
   <script type="text/javascript" src="src/LoadingScene.js"></script>
+  <script type="text/javascript" src="src/DistanceMonitor.js"></script>
   
   <script type="text/javascript" src="lib/Stats.js"></script>
   <script type="text/javascript" src="src/FPSCounter.js"></script>
+  
+  <!-- Blockly 本地版本 -->
+  <script src="third-party/blockly/blockly_compressed.js"></script>
+  <script src="third-party/blockly/blocks_compressed.js"></script>
+  <script src="third-party/blockly/javascript_compressed.js"></script>
+  <script src="third-party/blockly/msg/zh-hans.js"></script>
+  
+  <!-- Ace 代码编辑器 -->
+  <script src="third-party/ace/ace.js"></script>
+  
+  <!-- 自定义Blockly和代码编辑器功能 -->
+  <script src="blockly.js"></script>
+  <script src="code-editor.js"></script>
   
   <script type="text/javascript" src="src/ImageManager.js"></script>
   <script type="text/javascript" src="src/Construction.js"></script>
@@ -107,30 +123,573 @@
 
   <script type="text/javascript">
     $(function () {
-      var FPS = 50;
-      
-      var CANVAS_ID = 'canvas';
-      var ctx = createCanvasContext();
-      ctx.font = "16px prstart"
-      
-      var eventManager = new EventManager();
-      var keyboard = new Keyboard(eventManager);
-      var sceneManager = new SceneManager(eventManager);
-      sceneManager.toLoadingScene();
-      
-      setInterval(gameLoop, 1000 / FPS);
-      
-      function gameLoop() {
-        keyboard.fireEvents();
-        sceneManager.update();
-        sceneManager.draw(ctx);
-      }
-      
-      function createCanvasContext() {
-        $('<canvas id="' + CANVAS_ID + '" width="' + Globals.CANVAS_WIDTH + '" height="' + Globals.CANVAS_HEIGHT + '"></canvas>').prependTo('#main');
-        var canvas = document.getElementById(CANVAS_ID);
-        return canvas.getContext('2d');
+      // 创建游戏对象，封装场景绘制和管理
+      window.Game = {
+        FPS: 50,
+        CANVAS_ID: 'canvas',
+        
+        // 游戏核心组件
+        ctx: null,
+        eventManager: null,
+        keyboard: null,
+        sceneManager: null,
+        gameLoopInterval: null,
+        
+        // 初始化游戏
+        init: function() {
+          // 创建Canvas上下文
+          this.ctx = this._createCanvasContext();
+          this.ctx.font = "16px prstart";
+          
+          // 初始化核心组件
+          this.eventManager = new EventManager();
+          this.keyboard = new Keyboard(this.eventManager);
+          this.sceneManager = new SceneManager(this.eventManager);
+          
+          // 开始加载场景
+          this.sceneManager.toLoadingScene();
+          
+          // 启动游戏循环
+          this.gameLoopInterval = setInterval(this._gameLoop.bind(this), 1000 / this.FPS);
+          
+          console.log("=== Battle City 游戏已初始化完成 ===");
+        },
+        
+        // 创建Canvas上下文
+        _createCanvasContext: function() {
+          $('<canvas id="' + this.CANVAS_ID + '" width="' + Globals.CANVAS_WIDTH + '" height="' + Globals.CANVAS_HEIGHT + '"></canvas>').appendTo('#game-container');
+          var canvas = document.getElementById(this.CANVAS_ID);
+          return canvas.getContext('2d');
+        },
+        
+        // 游戏主循环
+        _gameLoop: function() {
+          this.keyboard.fireEvents();
+          this.sceneManager.update();
+          this.sceneManager.draw(this.ctx);
+        },
+        
+        // 停止游戏
+        stop: function() {
+          if (this.gameLoopInterval) {
+            clearInterval(this.gameLoopInterval);
+            this.gameLoopInterval = null;
+          }
+        },
+        
+        // 重新开始游戏
+        restart: function() {
+          this.stop();
+          this.init();
+        },
+        
+        // 获取当前场景
+        getCurrentScene: function() {
+          return this.sceneManager.getScene();
+        },
+        
+        // 切换到指定场景
+        changeScene: function(sceneName, params) {
+          switch(sceneName) {
+            case 'loading':
+              this.sceneManager.toLoadingScene();
+              break;
+            case 'mainMenu':
+              this.sceneManager.toMainMenuScene();
+              break;
+            case 'game':
+              this.sceneManager.toGameScene(params ? params.stage : undefined, params ? params.player : undefined);
+              break;
+            case 'construction':
+              this.sceneManager.toConstructionScene();
+              break;
+            case 'stageStatistics':
+              this.sceneManager.toStageStatisticsScene(params.stage, params.player, params.gameOver);
+              break;
+            case 'gameOver':
+              this.sceneManager.toGameOverScene();
+              break;
+          }
+        }
       };
+      
+      // 初始化游戏
+      Game.init();
+      
+      // 少儿编程接口 - tank
+      window.tank = {
+        // 游戏状态标志
+        _gameStarted: false,
+        _fireInterval: 500,
+        _lastFireTime: 0,
+        
+        // 坦克移动命令
+        _getPlayerTankController: function() {
+          // 获取玩家坦克控制器
+          if (Game.sceneManager && Game.sceneManager.getScene() && Game.sceneManager.getScene()._level) {
+            return Game.sceneManager.getScene()._level.getPlayerTankController();
+          }
+          return null;
+        },
+        
+        // 获取玩家坦克对象
+        _getPlayerTank: function() {
+          var controller = this._getPlayerTankController();
+          if (controller && controller._sprite) {
+            return controller._sprite;
+          }
+          return null;
+        },
+        
+        // 初始化游戏开始事件监听
+        _initGameEventListeners: function() {
+          if (Game.eventManager) {
+            // 创建一个简单的订阅者对象
+            var subscriber = {
+              notify: function(event) {
+                if (event.name === 'Level.Event.GAME_STARTED') {
+                  console.log('Game started event received');
+                  tank._gameStarted = true;
+                }
+              }
+            };
+            
+            // 添加订阅者
+            Game.eventManager.addSubscriber(subscriber, ['Level.Event.GAME_STARTED']);
+          }
+        },
+        
+        // 检查游戏是否已开始
+        isGameStarted: function() {
+          return this._gameStarted;
+        },
+        
+        moveUp: function() {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot moveUp');
+            return;
+          }
+          var controller = this._getPlayerTankController();
+          if (controller) {
+            controller.keyPressed(38); // 上箭头键
+          }
+        },
+        
+        moveDown: function() {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot moveDown');
+            return;
+          }
+          var controller = this._getPlayerTankController();
+          if (controller) {
+            controller.keyPressed(40); // 下箭头键
+          }
+        },
+        
+        moveLeft: function() {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot moveLeft');
+            return;
+          }
+          var controller = this._getPlayerTankController();
+          if (controller) {
+            controller.keyPressed(37); // 左箭头键
+          }
+        },
+        
+        moveRight: function() {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot moveRight');
+            return;
+          }
+          var controller = this._getPlayerTankController();
+          if (controller) {
+            controller.keyPressed(39); // 右箭头键
+          }
+        },
+        
+        stopMoving: function() {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot stopMoving');
+            return;
+          }
+          var controller = this._getPlayerTankController();
+          if (controller) {
+            controller.keyReleased(37); // 左
+            controller.keyReleased(38); // 上
+            controller.keyReleased(39); // 右
+            controller.keyReleased(40); // 下
+          }
+        },
+        
+        // 射击命令
+        shoot: function() {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot shoot');
+            return;
+          }
+          var controller = this._getPlayerTankController();
+          if (controller) {
+            controller.keyPressed(32); // 空格键
+          }
+        },
+        
+        stopShooting: function() {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot stopShooting');
+            return;
+          }
+          var controller = this._getPlayerTankController();
+          if (controller) {
+            controller.keyReleased(32); // 空格键
+          }
+        },
+        
+        // 向前移动指定距离（JSON块支持）
+        moveForward: function(distance) {
+          this.forward(distance);
+        },
+        forward: function(distance) {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot forward');
+            return;
+          }
+          // TODO: 实现向前移动指定距离的逻辑
+          console.log('forward called with distance:', distance);
+          this.moveUp();
+        },
+        
+        // 向后移动指定距离（JSON块支持）
+        moveBackward: function(distance) {
+          this.backward(distance);
+        },
+        backward: function(distance) {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot backward');
+            return;
+          }
+          // TODO: 实现向后移动指定距离的逻辑
+          console.log('backward called with distance:', distance);
+          this.moveDown();
+        },
+        
+        // 旋转指定角度（JSON块支持）
+        rotate: function(direction, angle) {
+          this.turn(direction, angle);
+        },
+        turn: function(direction, angle) {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot turn');
+            return;
+          }
+          // TODO: 实现旋转指定角度的逻辑
+          console.log('turn called with direction:', direction, 'angle:', angle);
+          if (direction === 'LEFT') {
+            // 向左旋转
+            this.moveLeft();
+            setTimeout(this.stopMoving.bind(this), 100);
+          } else if (direction === 'RIGHT') {
+            // 向右旋转
+            this.moveRight();
+            setTimeout(this.stopMoving.bind(this), 100);
+          }
+        },
+        
+        // 设置开火间隔（JSON块支持）
+        setFireInterval: function(interval) {
+          this.fire_interval(interval);
+        },
+        fire_interval: function(interval) {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot fire_interval');
+            return;
+          }
+          this._fireInterval = interval;
+          console.log('Fire interval set to:', interval, 'ms');
+        },
+        
+        // 检测敌人（JSON块支持）
+        detectEnemy: function() {
+          return this.has_enemy();
+        },
+        has_enemy: function() {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot has_enemy');
+            return false;
+          }
+          // TODO: 实现检测敌人的逻辑
+          console.log('has_enemy called');
+          return false;
+        },
+        
+        // 获取与最近敌人的距离（JSON块支持）
+        getDistanceToEnemy: function() {
+          return this.enemy_distance();
+        },
+        enemy_distance: function() {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot enemy_distance');
+            return 0;
+          }
+          // TODO: 实现获取与最近敌人距离的逻辑
+          console.log('enemy_distance called');
+          return this.getClosestEnemyDistance();
+        },
+        
+        // 获取生命值（JSON块支持）
+        getHealth: function() {
+          return this.health();
+        },
+        health: function() {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot health');
+            return 0;
+          }
+          // TODO: 实现获取生命值的逻辑
+          console.log('health called');
+          return 100; // 默认返回100%生命值
+        },
+        
+        // 获取X坐标（JSON块支持）
+        getPositionX: function() {
+          return this.x();
+        },
+        x: function() {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot x');
+            return 0;
+          }
+          var tank = this._getPlayerTank();
+          if (tank) {
+            return tank._x;
+          }
+          return 0;
+        },
+        
+        // 获取Y坐标（JSON块支持）
+        getPositionY: function() {
+          return this.y();
+        },
+        y: function() {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot y');
+            return 0;
+          }
+          var tank = this._getPlayerTank();
+          if (tank) {
+            return tank._y;
+          }
+          return 0;
+        },
+        
+        // 向最近敌人移动（JSON块支持）
+        approach_enemy: function() {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot approach_enemy');
+            return;
+          }
+          // TODO: 实现向最近敌人移动的逻辑
+          console.log('approach_enemy called');
+          // 简化实现：先向左旋转再向前移动
+          this.turn('LEFT', 45);
+          setTimeout(() => {
+            this.forward(100);
+          }, 200);
+        },
+        
+        // 躲避障碍物（JSON块支持）
+        avoid: function() {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot avoid');
+            return;
+          }
+          // TODO: 实现躲避障碍物的逻辑
+          console.log('avoid called');
+          // 简化实现：先向右旋转再向前移动
+          this.turn('RIGHT', 90);
+          setTimeout(() => {
+            this.forward(100);
+          }, 200);
+        },
+        
+        // 两点之间巡逻（JSON块支持）
+        patrol: function(pointA, pointB) {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot patrol');
+            return;
+          }
+          // TODO: 实现两点之间巡逻的逻辑
+          console.log('patrol called with points:', pointA, pointB);
+          // 简化实现：先向前移动，然后向后移动
+          this.forward(150);
+          setTimeout(() => {
+            this.backward(150);
+          }, 1000);
+        },
+        
+        // 快速开始第6关（少儿编程关卡）
+        startProgrammingLevel: function() {
+          Game.sceneManager.toGameScene(6);
+        },
+        
+        // 距离监测接口
+        onEnemyApproaching: function(callback) {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot onEnemyApproaching');
+            return;
+          }
+          if (Game.eventManager) {
+            // 创建一个简单的订阅者对象
+            var subscriber = {
+              notify: function(event) {
+                if (event.name === 'Tank.Event.ENEMY_APPROACHING') {
+                  callback(event.distance);
+                }
+              }
+            };
+            
+            // 添加订阅者
+            Game.eventManager.addSubscriber(subscriber, ['Tank.Event.ENEMY_APPROACHING']);
+            
+            // 返回取消订阅的函数
+            return function() {
+              Game.eventManager.removeSubscriber(subscriber);
+            };
+          }
+        },
+        
+        onEnemyAtDistance: function(callback) {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot onEnemyAtDistance');
+            return;
+          }
+          if (Game.eventManager) {
+            // 创建一个简单的订阅者对象
+            var subscriber = {
+              notify: function(event) {
+                if (event.name === 'Tank.Event.ENEMY_AT_DISTANCE') {
+                  callback(event.distance);
+                }
+              }
+            };
+            
+            // 添加订阅者
+            Game.eventManager.addSubscriber(subscriber, ['Tank.Event.ENEMY_AT_DISTANCE']);
+            
+            // 返回取消订阅的函数
+            return function() {
+              Game.eventManager.removeSubscriber(subscriber);
+            };
+          }
+        },
+        
+        // 获取最近敌人的距离
+        getClosestEnemyDistance: function() {
+          if (!this._gameStarted) {
+            console.log('Game not started yet, cannot getClosestEnemyDistance');
+            return -1;
+          }
+          if (Game.sceneManager && Game.sceneManager.getScene() instanceof GameScene) {
+            var level = Game.sceneManager.getScene()._level;
+            if (level && level._spriteContainer) {
+              var playerTanks = level._spriteContainer.getSprites().filter(function(sprite) {
+                return sprite instanceof Tank && sprite.isPlayer();
+              });
+              
+              var enemyTanks = level._spriteContainer.getEnemyTanks();
+              
+              if (playerTanks.length > 0 && enemyTanks.length > 0) {
+                var playerTank = playerTanks[0];
+                var closestDistance = Infinity;
+                
+                enemyTanks.forEach(function(enemyTank) {
+                  var distance = playerTank.getCenter().distanceTo(enemyTank.getCenter());
+                  if (distance < closestDistance) {
+                    closestDistance = distance;
+                  }
+                });
+                
+                return closestDistance;
+              }
+            }
+          }
+          return -1; // 表示没有找到敌人或玩家坦克
+        },
+        
+        // 条件判断 - if块
+        if: function(condition, thenFunction) {
+          if (condition && typeof thenFunction === 'function') {
+            thenFunction();
+          }
+        },
+        
+        // 条件判断 - if-else块
+        ifElse: function(condition, thenFunction, elseFunction) {
+          if (condition) {
+            if (typeof thenFunction === 'function') {
+              thenFunction();
+            }
+          } else {
+            if (typeof elseFunction === 'function') {
+              elseFunction();
+            }
+          }
+        },
+        
+        // 延迟执行
+        delay: function(ms, callback) {
+          if (typeof callback === 'function') {
+            setTimeout(callback, ms);
+          }
+        },
+        
+        // 显示帮助信息
+        help: function() {
+          console.log("=== Battle City 少儿编程接口 ===");
+          console.log("移动命令:");
+          console.log("tank.moveUp() - 坦克向上移动");
+          console.log("tank.moveDown() - 坦克向下移动");
+          console.log("tank.moveLeft() - 坦克向左移动");
+          console.log("tank.moveRight() - 坦克向右移动");
+          console.log("tank.stopMoving() - 坦克停止移动");
+          console.log("");
+          console.log("射击命令:");
+          console.log("tank.shoot() - 坦克射击");
+          console.log("tank.stopShooting() - 停止射击");
+          console.log("");
+          console.log("距离监测命令:");
+          console.log("tank.onEnemyApproaching(callback) - 监听敌人接近事件");
+          console.log("tank.onEnemyAtDistance(callback) - 监听敌人距离事件");
+          console.log("tank.getClosestEnemyDistance() - 获取最近敌人的距离");
+          console.log("");
+          console.log("关卡命令:");
+          console.log("tank.startProgrammingLevel() - 开始编程关卡");
+          console.log("tank.isGameStarted() - 检查游戏是否已开始");
+          console.log("");
+          console.log("控制流命令:");
+          console.log("tank.if(condition, function() { ... }) - 条件判断");
+          console.log("tank.ifElse(condition, function() { ... }, function() { ... }) - 条件判断带else");
+          console.log("tank.delay(ms, function() { ... }) - 延迟执行");
+          console.log("");
+          console.log("示例:");
+          console.log("tank.startProgrammingLevel(); // 开始第6关");
+          console.log("tank.delay(1000, function() {");
+          console.log("  tank.if(tank.getClosestEnemyDistance() < 100, function() {");
+          console.log("    tank.shoot();");
+          console.log("  });");
+          console.log("});");
+        }
+      };
+      
+      // 初始化游戏事件监听
+      tank._initGameEventListeners();
+      
+      // 初始化时显示帮助信息
+      console.log("=== Battle City 少儿编程接口已加载 ===");
+      console.log("输入 tank.help() 查看可用命令");
+      console.log("输入 tank.startProgrammingLevel() 开始编程关卡");
+      
+
     });
   </script>
 
@@ -138,27 +697,41 @@
 
 <body>
   <div id="main">
-    <div id="help">
-      <p>CONTROLS:</p>
-      <table>
-        <tr>
-          <td><img src="images/Nintendo-Dpad-Neutral.png" alt="" /></td>
-          <td>ARROWS</td>
-        </tr>
-        <tr>
-          <td><img src="images/Nintendo-Button-A.png" alt="" />,<img src="images/Nintendo-Button-B.png" alt="" /></td>
-          <td>SPACE</td>
-        </tr>
-        <tr>
-          <td><img src="images/Nintendo-Button-Start.png" alt="" /></td>
-          <td>ENTER</td>
-        </tr>
-        <tr>
-          <td><img src="images/Nintendo-Button-Select.png" alt="" /></td>
-          <td>CTRL</td>
-        </tr>
-      </table>
-    </div>
+    <div class="container">
+      <!-- 左侧游戏区域 -->
+      <div class="game-area">
+        <div id="game-container"></div>
+        <div id="help">
+          <p>CONTROLS:</p>
+          <table>
+            <tr>
+              <td><img src="images/Nintendo-Dpad-Neutral.png" alt="" /></td>
+              <td>ARROWS</td>
+            </tr>
+            <tr>
+              <td><img src="images/Nintendo-Button-A.png" alt="" />,<img src="images/Nintendo-Button-B.png" alt="" /></td>
+              <td>SPACE</td>
+            </tr>
+            <tr>
+              <td><img src="images/Nintendo-Button-Start.png" alt="" /></td>
+              <td>ENTER</td>
+            </tr>
+            <tr>
+              <td><img src="images/Nintendo-Button-Select.png" alt="" /></td>
+              <td>CTRL</td>
+            </tr>
+          </table>
+        </div>
+      </div>      
+      <!-- 右侧编辑器区域 -->
+      <div class="editor-area">
+        <div id="editor-container">
+          <h2>代码编辑器</h2>
+          <div id="blockly-div"></div>
+          <div id="code-div"></div>
+        </div>
+      </div>
+    </div>    
   </div>
 </body>
 </html>

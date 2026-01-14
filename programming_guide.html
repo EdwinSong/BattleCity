@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Battle City 少儿编程指南</title>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .code-block {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            margin: 15px 0;
+        }
+        .example {
+            background-color: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .tip {
+            background-color: #f9f9f9;
+            border-left: 4px solid #f39c12;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        ul {
+            margin: 15px 0;
+        }
+        li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Battle City 少儿编程指南</h1>
+        
+        <h2>欢迎来到 Battle City 编程世界！</h2>
+        <p>在这个游戏中，你可以通过编写简单的 JavaScript 代码来控制我方坦克，完成各种任务和挑战。</p>
+        
+        <h2>如何开始？</h2>
+        <ol>
+            <li>打开浏览器，访问：http://localhost:8000/BattleCity.html</li>
+            <li>打开浏览器的开发者工具（按 F12 键）</li>
+            <li>切换到 "控制台"（Console）标签页</li>
+            <li>在控制台中输入代码来控制坦克</li>
+        </ol>
+        
+        <h2>可用命令</h2>
+        
+        <h3>1. 开始编程关卡</h3>
+        <div class="code-block">
+tank.startProgrammingLevel();
+        </div>
+        <p>这将直接进入第6关（少儿编程专用关卡），里面有一个固定位置的敌人坦克。</p>
+        
+        <h3>2. 移动命令</h3>
+        <div class="code-block">
+// 向上移动
+tank.moveUp();
+
+// 向下移动
+tank.moveDown();
+
+// 向左移动
+tank.moveLeft();
+
+// 向右移动
+tank.moveRight();
+
+// 停止移动
+tank.stopMoving();
+        </div>
+        
+        <h3>3. 射击命令</h3>
+        <div class="code-block">
+// 开始射击
+tank.shoot();
+
+// 停止射击
+tank.stopShooting();
+        </div>
+        
+        <h3>4. 显示帮助</h3>
+        <div class="code-block">
+// 显示所有可用命令
+tank.help();
+        </div>
+        
+        <h2>编程示例</h2>
+        
+        <h3>示例1：简单移动和射击</h3>
+        <div class="example">
+            <h4>代码：</h4>
+            <div class="code-block">
+// 开始编程关卡
+tank.startProgrammingLevel();
+
+// 向上移动2秒
+tank.moveUp();
+setTimeout(tank.stopMoving, 2000);
+
+// 1秒后开始射击，射击1秒
+setTimeout(tank.shoot, 1000);
+setTimeout(tank.stopShooting, 2000);
+            </div>
+            <h4>说明：</h4>
+            <p>这段代码会：</p>
+            <ul>
+                <li>进入编程关卡</li>
+                <li>让坦克向上移动2秒</li>
+                <li>从第1秒开始射击，持续1秒</li>
+            </ul>
+        </div>
+        
+        <h3>示例2：复杂移动路径</h3>
+        <div class="example">
+            <h4>代码：</h4>
+            <div class="code-block">
+// 开始编程关卡
+tank.startProgrammingLevel();
+
+// 移动路径：上 → 右 → 下 → 左
+setTimeout(() => tank.moveUp(), 0);      // 立即向上
+setTimeout(() => tank.stopMoving(), 1000); // 1秒后停止
+
+setTimeout(() => tank.moveRight(), 1000); // 1秒后向右
+setTimeout(() => tank.stopMoving(), 2000); // 2秒后停止
+
+setTimeout(() => tank.moveDown(), 2000);   // 2秒后向下
+setTimeout(() => tank.stopMoving(), 3000); // 3秒后停止
+
+setTimeout(() => tank.moveLeft(), 3000);    // 3秒后向左
+setTimeout(() => tank.stopMoving(), 4000); // 4秒后停止
+
+// 在移动过程中射击
+setTimeout(() => tank.shoot(), 1500);      // 1.5秒时射击
+setTimeout(() => tank.stopShooting(), 3500); // 3.5秒时停止射击
+            </div>
+            <h4>说明：</h4>
+            <p>这段代码会让坦克按照上→右→下→左的路径移动，形成一个矩形，同时在移动过程中射击。</p>
+        </div>
+        
+        <h3>示例3：自动瞄准和射击</h3>
+        <div class="example">
+            <h4>代码：</h4>
+            <div class="code-block">
+// 开始编程关卡
+tank.startProgrammingLevel();
+
+// 向上移动到合适位置
+tank.moveUp();
+setTimeout(tank.stopMoving, 1500);
+
+// 移动到敌人正下方
+setTimeout(() => tank.moveRight(), 1500);
+setTimeout(() => tank.stopMoving(), 2500);
+
+// 连续射击
+setTimeout(() => {
+    // 每隔0.5秒射击一次
+    const shootInterval = setInterval(() => {
+        tank.shoot();
+        setTimeout(tank.stopShooting, 100);
+    }, 500);
+    
+    // 5秒后停止射击
+    setTimeout(() => clearInterval(shootInterval), 5000);
+}, 3000);
+            </div>
+            <h4>说明：</h4>
+            <p>这段代码会让坦克移动到敌人下方，然后连续射击5秒，每次射击持续0.1秒，间隔0.5秒。</p>
+        </div>
+        
+        <h2>编程技巧</h2>
+        
+        <div class="tip">
+            <h4>使用 setTimeout 控制时间</h4>
+            <p>setTimeout 函数可以让代码在指定的时间后执行，单位是毫秒（1秒 = 1000毫秒）。</p>
+            <div class="code-block">
+// 1秒后执行函数
+setTimeout(() => {
+    // 这里写要执行的代码
+}, 1000);
+            </div>
+        </div>
+        
+        <div class="tip">
+            <h4>使用 setInterval 重复执行</h4>
+            <p>setInterval 函数可以让代码每隔一段时间重复执行一次。</p>
+            <div class="code-block">
+// 每隔1秒执行一次
+const intervalId = setInterval(() => {
+    // 这里写要重复执行的代码
+}, 1000);
+
+// 5秒后停止重复执行
+setTimeout(() => clearInterval(intervalId), 5000);
+            </div>
+        </div>
+        
+        <div class="tip">
+            <h4>调试技巧</h4>
+            <p>使用 console.log() 函数可以在控制台中输出信息，帮助你调试代码。</p>
+            <div class="code-block">
+console.log("开始游戏啦！");
+setTimeout(() => {
+    console.log("2秒过去了，坦克开始移动！");
+    tank.moveUp();
+}, 2000);
+            </div>
+        </div>
+        
+        <h2>任务挑战</h2>
+        <p>尝试完成以下任务，锻炼你的编程能力！</p>
+        
+        <ol>
+            <li>让坦克移动到敌人坦克的正下方，然后射击摧毁它。</li>
+            <li>编写代码让坦克画出一个正方形的路径，然后回到起点。</li>
+            <li>创建一个自动巡逻系统，让坦克在地图上不断巡逻并射击遇到的敌人。</li>
+            <li>尝试使用循环和条件语句，让坦克根据情况做出不同的反应。</li>
+        </ol>
+        
+        <h2>注意事项</h2>
+        <ul>
+            <li>确保在浏览器的控制台中输入代码，而不是地址栏。</li>
+            <li>代码中的大小写很重要，要准确输入命令。</li>
+            <li>如果遇到问题，可以刷新页面重新开始。</li>
+            <li>记得在完成任务后保存你的代码，方便下次使用。</li>
+        </ul>
+        
+        <h2>祝你编程愉快！</h2>
+        <p>现在就开始你的编程冒险吧！如果你有任何问题，可以随时查看帮助信息：</p>
+        <div class="code-block">
+tank.help();
+        </div>
+    </div>
+</body>
+</html>

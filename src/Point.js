@@ -32,3 +32,9 @@ Point.prototype.setXY = function (x, y) {
   this._x = x;
   this._y = y;
 };
+
+Point.prototype.distanceTo = function (point) {
+  var dx = this._x - point.getX();
+  var dy = this._y - point.getY();
+  return Math.sqrt(dx * dx + dy * dy);
+};

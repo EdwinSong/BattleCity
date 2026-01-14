@@ -10,12 +10,42 @@ BulletFactory.prototype.notify = function (event) {
 };
 
 BulletFactory.prototype.createBullet = function (tank) {
-  var bullet = new Bullet(this._eventManager, tank);
-  bullet.setPosition(this._getBulletPosition(tank));
-  bullet.setDimensions(tank.getBulletSize(), tank.getBulletSize());
-  bullet.setDirection(tank.getDirection());
-  bullet.setSpeed(tank.getBulletSpeed());
-  bullet.setType(tank.getBulletType());
+  // 只在玩家坦克射击时输出详细日志
+  if (tank.isPlayer()) {
+    console.log('BulletFactory.createBullet() called for player tank:', {
+      tankType: tank._type,
+      tankPosition: {x: tank._x, y: tank._y},
+      tankDirection: tank._direction,
+      tankBulletSize: tank.getBulletSize(),
+      tankBulletSpeed: tank.getBulletSpeed(),
+      tankBulletType: tank.getBulletType()
+    });
+    
+    var bullet = new Bullet(this._eventManager, tank);
+    var bulletPosition = this._getBulletPosition(tank);
+    console.log('Calculated bullet position:', bulletPosition);
+    
+    bullet.setPosition(bulletPosition);
+    bullet.setDimensions(tank.getBulletSize(), tank.getBulletSize());
+    bullet.setDirection(tank.getDirection());
+    bullet.setSpeed(tank.getBulletSpeed());
+    bullet.setType(tank.getBulletType());
+    
+    console.log('Bullet created successfully:', {
+      position: {x: bullet._x, y: bullet._y},
+      dimensions: {width: bullet._w, height: bullet._h},
+      direction: bullet._direction,
+      speed: bullet._speed
+    });
+  } else {
+    // AI坦克射击时不输出日志，只创建子弹
+    var bullet = new Bullet(this._eventManager, tank);
+    bullet.setPosition(this._getBulletPosition(tank));
+    bullet.setDimensions(tank.getBulletSize(), tank.getBulletSize());
+    bullet.setDirection(tank.getDirection());
+    bullet.setSpeed(tank.getBulletSpeed());
+    bullet.setType(tank.getBulletType());
+  }
   
   if (tank.isPlayer()) {
     SoundManager.play("bullet_shot");

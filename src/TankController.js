@@ -16,12 +16,25 @@ TankController.prototype.notify = function (event) {
 };
 
 TankController.prototype.keyPressed = function (key) {
-  if (!this._active || !this._sprite.canMove()) {
+  if (!this._active) {
     return;
   }
-  SpriteController.prototype.keyPressed.call(this, key);
   
+  // 移动命令需要检查canMove
+  if (key == Keyboard.Key.LEFT || key == Keyboard.Key.RIGHT || 
+      key == Keyboard.Key.UP || key == Keyboard.Key.DOWN) {
+    if (!this._sprite.canMove()) {
+      return;
+    }
+    SpriteController.prototype.keyPressed.call(this, key);
+  }
+  
+  // 射击命令不需要检查canMove
   if (key == Keyboard.Key.SPACE) {
+    // 只在玩家坦克射击时输出日志
+    if (this._sprite.isPlayer()) {
+      console.log('Player Tank Controller keyPressed for shoot');
+    }
     this._sprite.shoot();
   }
 };

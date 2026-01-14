@@ -70,17 +70,32 @@ EnemyFactory.prototype.setFlashingTanks = function (tanks) {
 };
 
 EnemyFactory.prototype.createNextEnemy = function () {
-  var tank = this.createEnemy(this.getNextEnemy(), this.getNextPosition());
+  var enemyConfig = this.getNextEnemy();
+  var tankPosition = this.getNextPosition();
+  var tank = this.createEnemy(enemyConfig, tankPosition);
   this.nextEnemy();
   this.nextPosition();
   return tank;
 };
 
-EnemyFactory.prototype.createEnemy = function (type, position) {
+EnemyFactory.prototype.createEnemy = function (enemyConfig, position) {
   var tank = new Tank(this._eventManager);
   tank.makeEnemy();
+  
+  // Handle both simple type string and complex object configuration
+  var type = typeof enemyConfig === 'string' ? enemyConfig : enemyConfig.type;
   tank.setType(type);
-  tank.setPosition(position);
+  
+  // Set position - use custom position if provided in config
+  var tankPosition = (typeof enemyConfig === 'object' && enemyConfig.fixed && enemyConfig.position) ? 
+                     new Point(enemyConfig.position.x, enemyConfig.position.y) : position;
+  tank.setPosition(tankPosition);
+  
+  // Store fixed position flag in tank's data object
+  if (typeof enemyConfig === 'object' && enemyConfig.fixed) {
+    tank._fixedPosition = true;
+  }
+  
   tank.setState(new TankStateAppearing(tank));
   
   if (type == Tank.Type.BASIC) {
